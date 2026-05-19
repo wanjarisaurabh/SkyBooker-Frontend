@@ -1,0 +1,224 @@
+<app-navbar></app-navbar>
+
+<main class="bookings-page">
+  <div class="container">
+    <section class="dashboard-hero">
+      <div class="hero-copy">
+        <p class="bookings-overline">Passenger Command Center</p>
+        <h1>My Trips Dashboard</h1>
+        <p>Track bookings, restart plans, and monitor status changes from one premium travel workspace.</p>
+      </div>
+      <div class="hero-actions">
+        <a routerLink="/home" class="search-btn-link">
+          <span class="material-symbols-rounded">add</span>
+          Plan New Trip
+        </a>
+      </div>
+    </section>
+
+    <section class="stats-strip">
+      <article class="stat-box"><span>Total</span><strong>{{ bookings().length }}</strong></article>
+      <article class="stat-box"><span>Visible</span><strong>{{ filteredBookings().length }}</strong></article>
+      <article class="stat-box"><span>Active</span><strong>{{ selectedBooking() ? '1' : '0' }}</strong></article>
+      <article class="stat-box"><span>Status Filter</span><strong>{{ filterStatus() }}</strong></article>
+    </section>
+
+    <div class="filter-chips">
+      @for (f of ['ALL','CONFIRMED','PENDING','CANCELLED','COMPLETED']; track f) {
+      <button
+        class="chip"
+        [class.active]="filterStatus() === f"
+        (click)="setFilter(f)"
+        type="button">
+        {{ f === 'ALL' ? 'All Trips' : f }}
+        @if (f === 'ALL') { ({{ bookings().length }}) }
+      </button>
+      }
+    </div>
+
+    <div class="bookings-layout" [class.has-detail]="selectedBooking()">
+      <section class="bookings-list">
+        @if (loading()) {
+          <div class="list-loading">
+            @for (i of [1,2,3]; track i) {
+              <div class="booking-skel skeleton"></div>
+            }
+          </div>
+        }
+
+        @if (!loading() && filteredBookings().length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">confirmation_number</span>
+            <h3>No trips available yet</h3>
+            <p>Create your first itinerary to begin managing travel plans.</p>
+            <a routerLink="/home" class="cta-link">Start Planning</a>
+          </div>
+        }
+
+        @for (booking of paginatedBookings(); track booking.bookingId) {
+          <div
+            class="booking-row"
+            [class.selected]="selectedBooking()?.bookingId === booking.bookingId"
+            (click)="selectBooking(booking)"
+            role="button"
+          >
+            <div class="booking-row-left">
+              <div class="pnr-wrap">
+                <span class="pnr-label">PNR</span>
+                <span class="pnr-val">{{ booking.pnrCode }}</span>
+              </div>
+              <div class="booking-meta">
+                <span class="booking-route">
+                  <span class="material-symbols-rounded">airplane_ticket</span>
+                  Booking #{{ booking.bookingId }}
+                </span>
+                <span class="booking-date">
+                  <span class="material-symbols-rounded" style="font-size:14px">calendar_today</span>
+                  {{ formatDate(booking.departureTime) }}
+                </span>
+                <span class="trip-type">{{ booking.tripType.replace('_', ' ') }}</span>
+              </div>
+            </div>
+            <div class="booking-row-right">
+              <span class="{{ getStatusClass(getDisplayStatus(booking)) }} status-badge">{{ getDisplayStatus(booking) }}</span>
+              <span class="fare-val">₹{{ booking.totalFare.toLocaleString('en-IN') }}</span>
+              <span class="material-symbols-rounded arrow-chevron">chevron_right</span>
+            </div>
+          </div>
+        }
+
+        <!-- Pagination UI -->
+        @if (totalPages() > 1) {
+          <div class="pagination-hub">
+            <button
+              class="page-btn"
+              [disabled]="currentPage() === 1"
+              (click)="setPage(currentPage() - 1)">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+
+            @for (p of pagesArray(); track p) {
+              <button
+                class="page-btn"
+                [class.active]="currentPage() === p"
+                (click)="setPage(p)">
+                {{ p }}
+              </button>
+            }
+
+            <button
+              class="page-btn"
+              [disabled]="currentPage() === totalPages()"
+              (click)="setPage(currentPage() + 1)">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        }
+      </section>
+
+      @if (selectedBooking()) {
+        <aside class="detail-panel animate-fade-up">
+          <div class="detail-header">
+            <h3>Trip Snapshot</h3>
+            <button class="close-detail" (click)="closeDetail()">
+              <span class="material-symbols-rounded">close</span>
+            </button>
+          </div>
+
+          <div class="detail-body">
+            <!-- PNR + Status -->
+            <div class="detail-top">
+              <div class="detail-pnr">
+                <span class="material-symbols-rounded" style="font-size:20px;color:#5b38ff">confirmation_number</span>
+                <span class="pnr-big">{{ selectedBooking()!.pnrCode }}</span>
+              </div>
+              <span class="{{ getStatusClass(getDisplayStatus(selectedBooking()!)) }} status-badge">{{ getDisplayStatus(selectedBooking()!) }}</span>
+            </div>
+
+            <!-- Info Grid -->
+            <div class="info-grid">
+              <div class="info-item">
+                <span class="info-label">Trip Type</span>
+                <span class="info-val">{{ selectedBooking()!.tripType.replace('_', ' ') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Departure</span>
+                <span class="info-val">{{ formatDateTime(selectedBooking()!.departureTime) }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Base Fare</span>
+                <span class="info-val">₹{{ selectedBooking()!.baseFare.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Taxes</span>
+                <span class="info-val">₹{{ selectedBooking()!.taxes.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item full">
+                <span class="info-label">Total Fare</span>
+                <span class="info-val total">₹{{ selectedBooking()!.totalFare.toLocaleString('en-IN') }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Meal Preference</span>
+                <span class="info-val">{{ selectedBooking()!.mealPreference || '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Extra Luggage</span>
+                <span class="info-val">{{ selectedBooking()!.luggageKg ? selectedBooking()!.luggageKg + ' kg' : '—' }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Contact Email</span>
+                <span class="info-val">{{ selectedBooking()!.contactEmail }}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Contact Phone</span>
+                <span class="info-val">{{ selectedBooking()!.contactPhone }}</span>
+              </div>
+              <div class="info-item full">
+                <span class="info-label">Booked At</span>
+                <span class="info-val">{{ formatDateTime(selectedBooking()!.bookedAt) }}</span>
+              </div>
+            </div>
+
+            @if (cancelSuccess()) {
+              <div class="detail-success">
+                <span class="material-symbols-rounded">check_circle</span>
+                {{ cancelSuccess() }}
+              </div>
+            }
+            @if (cancelError()) {
+              <div class="detail-error">{{ cancelError() }}</div>
+            }
+
+            <!-- Actions -->
+            @if (selectedBooking()!.status === 'CONFIRMED' || selectedBooking()!.status === 'PENDING') {
+              <button
+                class="cancel-btn"
+                [disabled]="cancelLoading()"
+                (click)="cancelBooking(selectedBooking()!.bookingId)"
+              >
+                @if (cancelLoading()) {
+                  <span class="btn-spinner-dark"></span>
+                  Cancelling...
+                } @else {
+                  <span class="material-symbols-rounded">cancel</span>
+                  Cancel This Trip
+                }
+              </button>
+            }
+
+            <button
+              class="cancel-btn"
+              type="button"
+              (click)="restartBooking(selectedBooking()!)"
+            >
+              <span class="material-symbols-rounded">replay</span>
+              Restart This Booking
+            </button>
+          </div>
+        </aside>
+      }
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

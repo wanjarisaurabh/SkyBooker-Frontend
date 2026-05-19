@@ -1,0 +1,38 @@
+<app-navbar></app-navbar>
+<main class="pay-page">
+  <div class="pay-container">
+    <div class="steps-bar">
+      <span class="step done">1. Seat</span>
+      <span class="material-symbols-rounded step-sep">chevron_right</span>
+      <span class="step done">2. Passengers</span>
+      <span class="material-symbols-rounded step-sep">chevron_right</span>
+      <span class="step active">3. Payment</span>
+    </div>
+    <h1>Complete Payment</h1>
+    @if (loading()) { <div class="p-loading"><div class="spinner"></div></div> }
+    @if (!loading() && booking()) {
+      <div class="pay-grid">
+        <div class="summary-card">
+          <h3>Order Summary</h3>
+          <div class="sum-row"><span>PNR</span><span class="pnr-v">{{ booking()!.pnrCode }}</span></div>
+          <div class="sum-row"><span>Trip Type</span><span>{{ booking()!.tripType.replace('_',' ') }}</span></div>
+          <div class="sum-row"><span>Base Fare</span><span>₹{{ booking()!.baseFare.toLocaleString('en-IN') }}</span></div>
+          <div class="sum-row"><span>Taxes &amp; Fees</span><span>₹{{ booking()!.taxes.toLocaleString('en-IN') }}</span></div>
+          <div class="sum-row total-row"><span>Total Payable</span><span class="sum-total">₹{{ booking()!.totalFare.toLocaleString('en-IN') }}</span></div>
+        </div>
+        <div class="pay-card">
+          <span class="material-symbols-rounded mat-icon-filled pay-main-icon">payments</span>
+          <h3>Pay with Razorpay</h3>
+          <p class="pay-sub">Secure payment — Card, UPI, Net Banking &amp; Wallets</p>
+          @if (error()) { <div class="pay-error">{{ error() }}</div> }
+          <button class="pay-btn" [disabled]="payLoading()" (click)="initiatePayment()">
+            @if (payLoading()) { <span class="btn-sp"></span> Processing... }
+            @else { <span class="material-symbols-rounded">lock</span> Pay ₹{{ booking()!.totalFare.toLocaleString('en-IN') }} }
+          </button>
+          <p class="pay-note">By continuing you agree to our terms &amp; refund policy. Local development uses a mock confirmation if Razorpay checkout is unavailable.</p>
+        </div>
+      </div>
+    }
+  </div>
+</main>
+<app-footer></app-footer>

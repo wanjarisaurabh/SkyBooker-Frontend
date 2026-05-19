@@ -1,0 +1,192 @@
+<app-navbar></app-navbar>
+
+<main class="home-page">
+  <section class="hero-shell">
+    <div class="container hero-grid">
+      <div class="hero-left">
+        <div class="hero-eyebrow">
+          <span class="material-symbols-rounded">radar</span>
+          <span>Skybooker Command Deck</span>
+        </div>
+        <h1 class="hero-title">
+          Fly smarter with a
+          <span class="text-gradient">premium aviation platform.</span>
+        </h1>
+        <p class="hero-sub">
+          Plan, compare, and manage travel with an enterprise-grade interface built for modern passengers.
+        </p>
+        <div class="hero-cta-row">
+          <a routerLink="/flights/search" class="btn btn-primary">Explore Flights</a>
+          <a routerLink="/auth/register" class="btn btn-outline">Join Skybooker</a>
+        </div>
+
+        <div class="search-card">
+          <div class="search-tabs">
+            <button
+              class="trip-tab"
+              [class.active]="tripType === 'ONE_WAY'"
+              (click)="tripType = 'ONE_WAY'">One Way</button>
+          </div>
+
+          <div class="search-grid">
+            <div class="route-group">
+              <div class="search-field search-field-wrap">
+                <label>From</label>
+                <div class="field-input-group">
+                  <span class="material-symbols-rounded field-icon">flight_takeoff</span>
+                  <input type="text" class="airport-input" [(ngModel)]="origin" (ngModelChange)="onOriginInput($event)" placeholder="ORIGIN CITY" autocomplete="off" />
+                  @if (originCode) { <span class="airport-code">{{ originCode }}</span> }
+                </div>
+                @if (showOriginDropdown()) {
+                  <div class="airport-dropdown">
+                    @for (airport of originResults(); track airport.airportId) {
+                      <div class="airport-item" (click)="selectOrigin(airport)">
+                        <span class="material-symbols-rounded">location_on</span>
+                        <div>
+                          <div class="airport-city">{{ airport.city }}</div>
+                          <div class="airport-name">{{ airport.name }}</div>
+                        </div>
+                        <span class="airport-code airport-code-right">{{ airport.iataCode }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+
+              <button class="swap-btn" (click)="swapRoutes()">
+                <span class="material-symbols-rounded">swap_horiz</span>
+              </button>
+
+              <div class="search-field search-field-wrap">
+                <label>To</label>
+                <div class="field-input-group">
+                  <span class="material-symbols-rounded field-icon">flight_land</span>
+                  <input type="text" class="airport-input" [(ngModel)]="destination" (ngModelChange)="onDestInput($event)" placeholder="DESTINATION CITY" autocomplete="off" />
+                  @if (destinationCode) { <span class="airport-code">{{ destinationCode }}</span> }
+                </div>
+                @if (showDestDropdown()) {
+                  <div class="airport-dropdown">
+                    @for (airport of destinationResults(); track airport.airportId) {
+                      <div class="airport-item" (click)="selectDest(airport)">
+                        <span class="material-symbols-rounded">location_on</span>
+                        <div>
+                          <div class="airport-city">{{ airport.city }}</div>
+                          <div class="airport-name">{{ airport.name }}</div>
+                        </div>
+                        <span class="airport-code airport-code-right">{{ airport.iataCode }}</span>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <div class="search-field">
+              <label>Departure</label>
+              <div class="field-input-group">
+                <span class="material-symbols-rounded field-icon">calendar_today</span>
+                <input type="date" [(ngModel)]="departureDate" [min]="today" />
+              </div>
+            </div>
+
+
+
+
+
+            <button class="search-btn" (click)="search()">
+              <span class="material-symbols-rounded">search</span>
+              Find Flights
+            </button>
+          </div>
+
+          @if (searchError()) {
+            <div class="search-error">
+              <span class="material-symbols-rounded">error</span>
+              {{ searchError() }}
+            </div>
+          }
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-panel stat-panel">
+          <p class="panel-title">Live Operations</p>
+          <div class="stat-grid">
+            <div class="stat-item">
+              <span>Routes</span>
+              <strong>240+</strong>
+            </div>
+            <div class="stat-item">
+              <span>On-time</span>
+              <strong>96.2%</strong>
+            </div>
+            <div class="stat-item">
+              <span>Daily Trips</span>
+              <strong>1,480</strong>
+            </div>
+            <div class="stat-item">
+              <span>Happy Flyers</span>
+              <strong>2.4M</strong>
+            </div>
+          </div>
+        </div>
+        <div class="hero-panel destination-panel">
+          <p class="panel-title">Trending Destinations</p>
+          <div class="destinations">
+            <article class="destination-card">
+              <h4>Singapore</h4>
+              <p>From ₹18,500</p>
+            </article>
+            <article class="destination-card">
+              <h4>Dubai</h4>
+              <p>From ₹22,900</p>
+            </article>
+            <article class="destination-card">
+              <h4>London</h4>
+              <p>From ₹46,300</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="container strip-section">
+    <h2>Trending corridors</h2>
+    <div class="slider-strip">
+      <article class="strip-card"><span>Mumbai → Singapore</span><strong>5h 40m</strong></article>
+      <article class="strip-card"><span>Delhi → Dubai</span><strong>3h 35m</strong></article>
+      <article class="strip-card"><span>Bengaluru → London</span><strong>9h 55m</strong></article>
+      <article class="strip-card"><span>Chennai → Bangkok</span><strong>4h 10m</strong></article>
+    </div>
+  </section>
+
+  <section class="container features">
+    <div class="feature-card">
+      <div class="feat-icon-box"><span class="material-symbols-rounded">airplane_ticket</span></div>
+      <h3>Ticket-grade pricing clarity</h3>
+      <p>Compare base fare, taxes, and flexibility at a glance with transparent cost blocks.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon-box"><span class="material-symbols-rounded">stacked_line_chart</span></div>
+      <h3>Operations intelligence</h3>
+      <p>Get delay trends, seat availability, and demand patterns through live decision widgets.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feat-icon-box"><span class="material-symbols-rounded">shield_lock</span></div>
+      <h3>Enterprise-grade security</h3>
+      <p>Secure authentication, protected payments, and robust controls from booking to boarding.</p>
+    </div>
+  </section>
+
+  <section class="container timeline-section">
+    <h2>Travel lifecycle</h2>
+    <div class="timeline">
+      <div class="timeline-step"><span>01</span><p>Search and compare live fares.</p></div>
+      <div class="timeline-step"><span>02</span><p>Select seats and add essentials.</p></div>
+      <div class="timeline-step"><span>03</span><p>Confirm with secure payments.</p></div>
+      <div class="timeline-step"><span>04</span><p>Track updates through departure.</p></div>
+    </div>
+  </section>
+</main>
+
+<app-footer></app-footer>

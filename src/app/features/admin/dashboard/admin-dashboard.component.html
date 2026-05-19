@@ -1,0 +1,593 @@
+<app-navbar></app-navbar>
+
+<main class="dashboard">
+  <div class="container animate-in">
+
+    <!-- Admin Welcome Banner -->
+    <div class="welcome-banner">
+      <div class="welcome-glow"></div>
+      <div class="welcome-content">
+        <div class="welcome-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</div>
+        <div>
+          <p class="welcome-greeting">System Administrator,</p>
+          <h1 class="welcome-name">{{ user()?.fullName }}</h1>
+          <p class="welcome-sub">Full platform oversight — airlines, nodes, and security.</p>
+        </div>
+      </div>
+      <div class="admin-status-pill">
+        <span class="status-dot"></span>
+        System Online
+      </div>
+    </div>
+
+    <!-- Admin Tabs -->
+    <div class="admin-tabs">
+      @for (tab of [['overview','dashboard','Overview'],['airlines','airlines','Airlines'],['airports','flight_takeoff','Airports'],['users','people','Users'],['bookings','confirmation_number','Bookings'],['broadcast','campaign','Broadcast']] ; track tab[0]) {
+        <button
+          class="admin-tab"
+          [class.active]="activeTab() === tab[0]"
+          (click)="setTab(tab[0])"
+          type="button"
+        >
+          <span class="material-symbols-rounded mat-icon-filled">{{ tab[1] }}</span>
+          {{ tab[2] }}
+        </button>
+      }
+    </div>
+
+    <!-- ============ OVERVIEW ============ -->
+    @if (activeTab() === 'overview') {
+      @if (loading()) {
+        <div class="section-loading"><div class="spinner"></div></div>
+      } @else {
+        <div class="stats-row admin-overview-grid">
+          <div class="stat-card highlight">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon">payments</span>
+            <div>
+              <span class="stat-val">₹{{ totalRevenue().toLocaleString('en-IN') }}</span>
+              <span class="stat-label">Total Revenue</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon blue">person</span>
+            <div>
+              <span class="stat-val">{{ passengerCount }}</span>
+              <span class="stat-label">Passengers</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon green">airlines</span>
+            <div>
+              <span class="stat-val">{{ activeAirlinesCount }}</span>
+              <span class="stat-label">Active Airlines</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon coral">flight_takeoff</span>
+            <div>
+              <span class="stat-val">{{ airports().length }}</span>
+              <span class="stat-label">Airports</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon amber">badge</span>
+            <div>
+              <span class="stat-val">{{ staffCount }}</span>
+              <span class="stat-label">Staff Users</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon purple">confirmation_number</span>
+            <div>
+              <span class="stat-val">{{ bookings().length }}</span>
+              <span class="stat-label">Bookings</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <span class="material-symbols-rounded mat-icon-filled stat-icon dark">manage_accounts</span>
+            <div>
+              <span class="stat-val">{{ users().length }}</span>
+              <span class="stat-label">Total Users</span>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ============ AIRLINES ============ -->
+    @if (activeTab() === 'airlines') {
+      <section class="dash-section">
+        <div class="section-header">
+          <h2><span class="material-symbols-rounded">airlines</span> Airlines Management</h2>
+          <button class="quick-action-btn-sm" (click)="showAirlineModal.set(true)">
+            <span class="material-symbols-rounded">add</span> Add Airline
+          </button>
+        </div>
+        <div class="ghost-table-wrap">
+          <table class="ghost-table">
+            <thead>
+              <tr>
+                <th>Airline</th>
+                <th>IATA</th>
+                <th>Country</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (airline of paginatedAirlines(); track airline.airlineId) {
+                <tr>
+                  <td>
+                    <div class="airline-meta">
+                      @if (airline.logoUrl) {
+                        <img [src]="airline.logoUrl" [alt]="airline.name" class="mini-logo" />
+                      } @else {
+                        <span class="material-symbols-rounded placeholder-logo">airlines</span>
+                      }
+                      <strong>{{ airline.name }}</strong>
+                    </div>
+                  </td>
+                  <td><span class="iata-tag">{{ airline.iataCode }}</span></td>
+                  <td>{{ airline.country }}</td>
+                  <td>
+                    <span class="status-pill {{ airline.isActive ? 'on-time' : 'cancelled' }}">
+                      {{ airline.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="toggle-btn {{ airline.isActive ? 'off' : 'on' }}" (click)="toggleAirline(airline)">
+                      {{ airline.isActive ? 'Deactivate' : 'Activate' }}
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (pagesArray().length > 1) {
+          <div class="pagination animate-fade-up">
+            <button class="page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            @for (p of pagesArray(); track p) {
+              <button class="page-btn" [class.active]="p === currentPage()" (click)="setPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ============ AIRPORTS ============ -->
+    @if (activeTab() === 'airports') {
+      <section class="dash-section">
+        <div class="section-header">
+          <h2><span class="material-symbols-rounded">flight_takeoff</span> Hub Management</h2>
+          <button class="quick-action-btn-sm" (click)="showAirportModal.set(true)">
+            <span class="material-symbols-rounded">add</span> Add Airport
+          </button>
+        </div>
+        <div class="ghost-table-wrap">
+          <table class="ghost-table">
+            <thead>
+              <tr>
+                <th>Airport Name</th>
+                <th>IATA</th>
+                <th>Location</th>
+                <th>Timezone</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (airport of paginatedAirports(); track airport.airportId) {
+                <tr>
+                  <td><strong>{{ airport.name }}</strong></td>
+                  <td><span class="iata-tag">{{ airport.iataCode }}</span></td>
+                  <td>{{ airport.city }}, {{ airport.country }}</td>
+                  <td class="muted-text">{{ airport.timezone }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (pagesArray().length > 1) {
+          <div class="pagination animate-fade-up">
+            <button class="page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            @for (p of pagesArray(); track p) {
+              <button class="page-btn" [class.active]="p === currentPage()" (click)="setPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ============ USERS ============ -->
+    @if (activeTab() === 'users') {
+      <section class="dash-section">
+        <div class="section-header">
+          <h2><span class="material-symbols-rounded">people</span> User Directory</h2>
+          <button class="quick-action-btn-sm" (click)="showUserModal.set(true)">
+            <span class="material-symbols-rounded">person_add</span> New User
+          </button>
+        </div>
+        <div class="ghost-table-wrap">
+          <table class="ghost-table">
+            <thead>
+              <tr>
+                <th>Member</th>
+                <th>Email / Phone</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of paginatedUsers(); track u.userId) {
+                <tr>
+                  <td>
+                    <div class="user-meta">
+                      <div class="avatar-mini">{{ u.fullName.charAt(0) | uppercase }}</div>
+                      <strong>{{ u.fullName }}</strong>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="contact-meta">
+                      <span>{{ u.email }}</span>
+                      <small>{{ u.phone }}</small>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="role-pill {{ u.role.toLowerCase() }}">
+                      {{ u.role.replace('_', ' ') }}
+                    </span>
+                  </td>
+                  <td>
+                    <span class="status-pill {{ u.active ? 'on-time' : 'cancelled' }}">
+                      {{ u.active ? 'Active' : 'Disabled' }}
+                    </span>
+                  </td>
+                  <td>
+                    <button class="icon-btn-danger" [disabled]="!canDeleteUser(u)" (click)="openDeleteUserModal(u)">
+                      <span class="material-symbols-rounded">delete</span>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (pagesArray().length > 1) {
+          <div class="pagination animate-fade-up">
+            <button class="page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            @for (p of pagesArray(); track p) {
+              <button class="page-btn" [class.active]="p === currentPage()" (click)="setPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ============ BOOKINGS ============ -->
+    @if (activeTab() === 'bookings') {
+      <section class="dash-section">
+        <div class="section-header">
+          <h2><span class="material-symbols-rounded">confirmation_number</span> Global Bookings</h2>
+          <div class="header-filters">
+            <span class="count-badge blue">Total: {{ bookings().length }}</span>
+            <span class="count-badge green">Confirmed: {{ confirmedBookingsCount }}</span>
+          </div>
+        </div>
+        <div class="ghost-table-wrap">
+          <table class="ghost-table">
+            <thead>
+              <tr>
+                <th>PNR</th>
+                <th>Contact</th>
+                <th>Status</th>
+                <th>Revenue</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (booking of paginatedBookings(); track booking.bookingId) {
+                <tr>
+                  <td><span class="pnr-box">{{ booking.pnrCode }}</span></td>
+                  <td><div class="muted-text">{{ booking.contactEmail }}</div></td>
+                  <td>
+                    <span class="booking-status {{ getDisplayStatus(booking).toLowerCase() }}">
+                      {{ getDisplayStatus(booking) }}
+                    </span>
+                  </td>
+                  <td><strong>₹{{ booking.totalFare.toLocaleString('en-IN') }}</strong></td>
+                  <td class="muted-text">{{ formatDate(booking.bookedAt) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if (pagesArray().length > 1) {
+          <div class="pagination animate-fade-up">
+            <button class="page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+              <span class="material-symbols-rounded">chevron_left</span>
+            </button>
+            @for (p of pagesArray(); track p) {
+              <button class="page-btn" [class.active]="p === currentPage()" (click)="setPage(p)">{{ p }}</button>
+            }
+            <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ============ BROADCAST ============ -->
+    @if (activeTab() === 'broadcast') {
+      <section class="dash-section animate-fade-up">
+        <div class="broadcast-banner">
+          <div class="broadcast-icon-box">
+            <span class="material-symbols-rounded">campaign</span>
+          </div>
+          <div class="broadcast-content">
+            <h2>Platform Broadcast</h2>
+            <p>Communicate instantly with all users or specific roles across the platform.</p>
+          </div>
+        </div>
+        
+        <div class="broadcast-form-card">
+          <div class="broadcast-form-grid">
+            <div class="sky-form-item">
+              <label>Broadcast Title</label>
+              <input type="text" [(ngModel)]="broadcastTitle" placeholder="e.g., Scheduled Maintenance" class="sky-input" />
+            </div>
+            <div class="sky-form-item">
+              <label>Target Audience</label>
+              <select [(ngModel)]="broadcastRole" class="sky-input sky-select">
+                <option value="">Global (All Registered Users)</option>
+                <option value="PASSENGER">Passengers Only</option>
+                <option value="AIRLINE_STAFF">Airline Operations Staff</option>
+              </select>
+            </div>
+            <div class="sky-form-item wide">
+              <label>Message Content</label>
+              <textarea [(ngModel)]="broadcastMsg" placeholder="Type your announcement here..." class="sky-input sky-textarea"></textarea>
+            </div>
+          </div>
+
+          <div class="broadcast-actions">
+            @if (broadcastError()) { <div class="alert-inline error"><span class="material-symbols-rounded">error</span> {{ broadcastError() }}</div> }
+            @if (broadcastSuccess()) { <div class="alert-inline success"><span class="material-symbols-rounded">check_circle</span> {{ broadcastSuccess() }}</div> }
+            
+            <button class="btn-dispatch" [disabled]="broadcastLoading()" (click)="sendBroadcast()">
+              @if (broadcastLoading()) { 
+                <span class="btn-spinner"></span> 
+                Dispatching... 
+              } @else { 
+                <span class="material-symbols-rounded">send</span> 
+                Dispatch Notification 
+              }
+            </button>
+          </div>
+        </div>
+      </section>
+    }
+
+  </div>
+</main>
+
+<!-- Modals -->
+@if (showAirlineModal()) {
+  <div class="modal-overlay" (click)="showAirlineModal.set(false)">
+    <div class="modal-card wide animate-fade-up" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Register New Airline</h3>
+        <button class="close-btn" (click)="showAirlineModal.set(false)"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="form-item">
+            <label>Airline ID</label>
+            <input type="text" [ngModel]="airlineForm.airlineId" (ngModelChange)="airlineForm.airlineId = ($event || '').toUpperCase()" placeholder="e.g. SKY-INTL" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>Name</label>
+            <input type="text" [(ngModel)]="airlineForm.name" placeholder="e.g. Sky High International" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>IATA Code</label>
+            <input type="text" [ngModel]="airlineForm.iataCode" (ngModelChange)="airlineForm.iataCode = ($event || '').toUpperCase()" placeholder="e.g. SH" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>ICAO Code</label>
+            <input type="text" [ngModel]="airlineForm.icaoCode" (ngModelChange)="airlineForm.icaoCode = ($event || '').toUpperCase()" placeholder="e.g. SKY" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>Country</label>
+            <select [(ngModel)]="airlineForm.country" class="modal-input">
+              <option value="" disabled selected>SELECT COUNTRY</option>
+              @for (c of countries; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-item">
+            <label>Email Address</label>
+            <input type="email" [(ngModel)]="airlineForm.contactEmail" placeholder="ops@airline.com" class="modal-input" />
+          </div>
+          <div class="form-item wide">
+            <label>Logo URL</label>
+            <input type="url" [(ngModel)]="airlineForm.logoUrl" placeholder="https://logo-provider.com/airline.png" class="modal-input" />
+          </div>
+        </div>
+        @if (airlineFormError()) { <div class="alert-inline error mt-16">{{ airlineFormError() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="showAirlineModal.set(false)">Dismiss</button>
+        <button class="btn-confirm" (click)="saveAirline()" [disabled]="airlineFormLoading()">
+          @if (airlineFormLoading()) { <span class="btn-spinner"></span> Saving... }
+          @else { Create Airline }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showAirportModal()) {
+  <div class="modal-overlay" (click)="showAirportModal.set(false)">
+    <div class="modal-card wide animate-fade-up" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Register New Hub (Airport)</h3>
+        <button class="close-btn" (click)="showAirportModal.set(false)"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="form-item">
+            <label>Airport ID</label>
+            <input type="text" [ngModel]="airportForm.airportId" (ngModelChange)="airportForm.airportId = ($event || '').toUpperCase()" placeholder="e.g. NAG-HUB" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>Airport Name</label>
+            <input type="text" [(ngModel)]="airportForm.name" placeholder="e.g. Nagpur International" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>IATA Code</label>
+            <input type="text" [ngModel]="airportForm.iataCode" (ngModelChange)="airportForm.iataCode = ($event || '').toUpperCase()" placeholder="e.g. NAG" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>ICAO Code</label>
+            <input type="text" [ngModel]="airportForm.icaoCode" (ngModelChange)="airportForm.icaoCode = ($event || '').toUpperCase()" placeholder="e.g. VANP" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>City</label>
+            <input type="text" [(ngModel)]="airportForm.city" placeholder="e.g. Nagpur" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Country</label>
+            <select [(ngModel)]="airportForm.country" class="modal-input">
+              <option value="" disabled selected>SELECT COUNTRY</option>
+              @for (c of countries; track c) {
+                <option [value]="c">{{ c }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-item">
+            <label>Latitude</label>
+            <input type="number" [(ngModel)]="airportForm.latitude" step="0.000001" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Longitude</label>
+            <input type="number" [(ngModel)]="airportForm.longitude" step="0.000001" class="modal-input" />
+          </div>
+          <div class="form-item wide">
+            <label>Timezone</label>
+            <select [(ngModel)]="airportForm.timezone" class="modal-input">
+              <option value="" disabled selected>SELECT TIMEZONE</option>
+              @for (tz of timezones; track tz) {
+                <option [value]="tz">{{ tz }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        @if (airportFormError()) { <div class="alert-inline error mt-16">{{ airportFormError() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="showAirportModal.set(false)">Dismiss</button>
+        <button class="btn-confirm" (click)="saveAirport()" [disabled]="airportFormLoading()">
+          @if (airportFormLoading()) { <span class="btn-spinner"></span> Creating Hub... }
+          @else { Create Airport }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showUserModal()) {
+  <div class="modal-overlay" (click)="showUserModal.set(false)">
+    <div class="modal-card animate-fade-up" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Create New User</h3>
+        <button class="close-btn" (click)="showUserModal.set(false)"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid" style="grid-template-columns: 1fr;">
+          <div class="form-item">
+            <label>Full Name</label>
+            <input type="text" [(ngModel)]="userForm.fullName" placeholder="e.g. John Doe" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Email Address</label>
+            <input type="email" [(ngModel)]="userForm.email" placeholder="john@example.com" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Password</label>
+            <input type="password" [(ngModel)]="userForm.password" placeholder="••••••••" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Phone Number</label>
+            <input type="tel" [(ngModel)]="userForm.phone" placeholder="+1234567890" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Role</label>
+            <select [(ngModel)]="userForm.role" class="modal-input">
+              <option value="PASSENGER">Passenger</option>
+              <option value="AIRLINE_STAFF">Airline Staff</option>
+              <option value="ADMIN">System Admin</option>
+            </select>
+          </div>
+        </div>
+        @if (userFormError()) { <div class="alert-inline error mt-16">{{ userFormError() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="showUserModal.set(false)">Dismiss</button>
+        <button class="btn-confirm" (click)="saveUser()" [disabled]="userFormLoading()">
+          @if (userFormLoading()) { <span class="btn-spinner"></span> Creating... }
+          @else { Create User }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showDeleteUserModal()) {
+  <div class="modal-overlay" (click)="closeDeleteUserModal()">
+    <div class="modal-card animate-fade-up" (click)="$event.stopPropagation()" style="max-width: 400px;">
+      <div class="modal-head">
+        <h3>Confirm Deletion</h3>
+        <button class="close-btn" (click)="closeDeleteUserModal()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to permanently delete <strong>{{ userToDelete()?.fullName }}</strong>?</p>
+        <p class="muted-text text-sm mt-8" style="color: #64748b; font-size: 0.875rem; margin-top: 8px;">This action cannot be undone and will remove all associated data including bookings.</p>
+        @if (deleteUserError()) { <div class="alert-inline error mt-16">{{ deleteUserError() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="closeDeleteUserModal()" [disabled]="deleteUserLoading()">Cancel</button>
+        <button class="btn-confirm" (click)="deleteSelectedUser()" [disabled]="deleteUserLoading()" style="background-color: #ef4444; border-color: #ef4444;">
+          @if (deleteUserLoading()) { <span class="btn-spinner"></span> Deleting... }
+          @else { Delete User }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>

@@ -1,0 +1,361 @@
+<app-navbar></app-navbar>
+
+<main class="dashboard">
+  <div class="container animate-in">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+      <div class="welcome-glow"></div>
+      <div class="welcome-content">
+        <div class="welcome-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</div>
+        <div>
+          <p class="welcome-greeting">Operational Command,</p>
+          <h1 class="welcome-name">{{ user()?.fullName }}</h1>
+          <p class="welcome-sub">Managing fleet efficiency and passenger flow.</p>
+        </div>
+      </div>
+      <button class="quick-action-btn" (click)="openAddFlightModal()">
+        <span class="material-symbols-rounded">add_circle</span>
+        Schedule New Flight
+      </button>
+    </div>
+
+    <!-- Metrics Grid -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="material-symbols-rounded mat-icon-filled stat-icon blue">flight_takeoff</span>
+        <div>
+          <span class="stat-val">{{ flights().length }}</span>
+          <span class="stat-label">Total Flights</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-symbols-rounded mat-icon-filled stat-icon green">check_circle</span>
+        <div>
+          <span class="stat-val">94%</span>
+          <span class="stat-label">On-Time Rate</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-symbols-rounded mat-icon-filled stat-icon amber">group</span>
+        <div>
+          <span class="stat-val">{{ flightBookings().length || '—' }}</span>
+          <span class="stat-label">Manifest Count</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="material-symbols-rounded mat-icon-filled stat-icon purple">airplane_ticket</span>
+        <div>
+          <span class="stat-val">82%</span>
+          <span class="stat-label">Avg. Load Factor</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Operations Hub -->
+    <div class="ops-hub">
+      <div class="hub-header">
+        <div class="hub-title">
+          <span class="material-symbols-rounded">filter_alt</span>
+          <h2>Fleet Selection</h2>
+        </div>
+        <div class="hub-actions">
+          <select class="hub-select" [(ngModel)]="selectedAirlineId" (ngModelChange)="loadFlightsByAirline($event)">
+            <option value="">— Choose Airline to Manage —</option>
+            @for (airline of airlines(); track airline.airlineId) {
+              <option [value]="airline.airlineId">{{ airline.name }} ({{ airline.iataCode }})</option>
+            }
+          </select>
+        </div>
+      </div>
+
+
+    </div>
+
+    <!-- Dashboard Content -->
+    <div class="dashboard-grid">
+      
+      <!-- Flight Schedule -->
+      <section class="dash-section">
+        <div class="section-header">
+          <h2>
+            <span class="material-symbols-rounded">event_note</span>
+            Flight Schedule
+          </h2>
+          @if (flights().length > 0) {
+            <span class="count-pill">{{ flights().length }} Flights</span>
+          }
+        </div>
+
+        @if (loading()) {
+          <div class="section-loading"><div class="spinner"></div></div>
+        }
+
+        @if (!loading() && flights().length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">flight_off</span>
+            <p>No active schedule. Select an airline from the fleet menu.</p>
+          </div>
+        }
+
+        @if (!loading() && flights().length > 0) {
+          <div class="ghost-table-wrap">
+            <table class="ghost-table">
+              <thead>
+                <tr>
+                  <th>Flight</th>
+                  <th>Route</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (flight of paginatedFlights(); track flight.flightId) {
+                  <tr [class.selected]="selectedFlight()?.flightId === flight.flightId" (click)="selectFlight(flight)">
+                    <td>
+                      <div class="f-info">
+                        <strong class="f-num">{{ flight.flightNumber }}</strong>
+                        <span class="f-type">{{ flight.aircraftType }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="r-info">
+                        <span class="iata">{{ flight.originAirportCode }}</span>
+                        <span class="material-symbols-rounded arrow">arrow_forward</span>
+                        <span class="iata">{{ flight.destinationAirportCode }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="t-info">
+                        <strong>{{ formatTime(flight.departureTime) }}</strong>
+                        <span>{{ formatDate(flight.departureTime) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-pill {{ getStatusClass(flight.status) }}">
+                        {{ flight.status.replace('_', ' ') }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="actions-row" (click)="$event.stopPropagation()">
+                        <button class="icon-btn-ghost" (click)="openStatusModal(flight)" title="Update Status">
+                          <span class="material-symbols-rounded">edit_square</span>
+                        </button>
+                        <a [routerLink]="['/staff/seat-config', flight.flightId]" class="icon-btn-ghost" title="Configure Seats">
+                          <span class="material-symbols-rounded">airline_seat_recline_normal</span>
+                        </a>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          @if (flightsPagesArray().length > 1) {
+            <div class="pagination">
+              <button class="page-btn" [disabled]="flightsPage() === 1" (click)="setFlightsPage(flightsPage() - 1)">
+                <span class="material-symbols-rounded">chevron_left</span>
+              </button>
+              @for (p of flightsPagesArray(); track p) {
+                <button class="page-btn" [class.active]="p === flightsPage()" (click)="setFlightsPage(p)">{{ p }}</button>
+              }
+              <button class="page-btn" [disabled]="flightsPage() === flightsTotalPages()" (click)="setFlightsPage(flightsPage() + 1)">
+                <span class="material-symbols-rounded">chevron_right</span>
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+      <!-- Manifest View -->
+      <section class="dash-section">
+        <div class="section-header">
+          <h2>
+            <span class="material-symbols-rounded">people</span>
+            Manifest Details
+          </h2>
+          @if (selectedFlight()) {
+            <span class="flight-tag">{{ selectedFlight()!.flightNumber }}</span>
+          }
+        </div>
+
+        @if (!selectedFlight()) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">touch_app</span>
+            <p>Select a flight to load the passenger manifest.</p>
+          </div>
+        }
+
+        @if (selectedFlight() && bookingsLoading()) {
+          <div class="section-loading"><div class="spinner"></div></div>
+        }
+
+        @if (selectedFlight() && !bookingsLoading() && flightBookings().length === 0) {
+          <div class="empty-state">
+            <span class="material-symbols-rounded empty-icon">person_off</span>
+            <p>No bookings confirmed for this flight.</p>
+          </div>
+        }
+
+        @if (selectedFlight() && !bookingsLoading() && flightBookings().length > 0) {
+          <div class="ghost-table-wrap">
+            <table class="ghost-table">
+              <thead>
+                <tr>
+                  <th>Passenger</th>
+                  <th>PNR</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (booking of paginatedManifest(); track booking.bookingId) {
+                  <tr>
+                    <td>
+                      <div class="p-info">
+                        <strong class="p-email">{{ booking.contactEmail }}</strong>
+                        <span class="p-phone">{{ booking.contactPhone }}</span>
+                      </div>
+                    </td>
+                    <td><span class="pnr-box">{{ booking.pnrCode }}</span></td>
+                    <td>
+                      <span class="booking-status {{ getBookingStatusClass(booking.status) }}">
+                        {{ getDisplayBookingStatus(booking.status) }}
+                      </span>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          @if (manifestPagesArray().length > 1) {
+            <div class="pagination">
+              <button class="page-btn" [disabled]="manifestPage() === 1" (click)="setManifestPage(manifestPage() - 1)">
+                <span class="material-symbols-rounded">chevron_left</span>
+              </button>
+              @for (p of manifestPagesArray(); track p) {
+                <button class="page-btn" [class.active]="p === manifestPage()" (click)="setManifestPage(p)">{{ p }}</button>
+              }
+              <button class="page-btn" [disabled]="manifestPage() === manifestTotalPages()" (click)="setManifestPage(manifestPage() + 1)">
+                <span class="material-symbols-rounded">chevron_right</span>
+              </button>
+            </div>
+          }
+        }
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<!-- Status Update Modal -->
+@if (showStatusModal()) {
+  <div class="modal-overlay" (click)="closeModal()">
+    <div class="modal-card animate-fade-up" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Update Operations Status</h3>
+        <button class="close-btn" (click)="closeModal()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-flight-banner">
+          <span class="material-symbols-rounded">flight_takeoff</span>
+          <span>Flight <strong>{{ selectedFlight()?.flightNumber }}</strong></span>
+        </div>
+        <div class="modal-form">
+          <label>Operational State</label>
+          <select class="modal-input" [(ngModel)]="updateStatusVal" [disabled]="statusUpdating()">
+            @for (s of statuses; track s) {
+              <option [value]="s">{{ s.replace('_', ' ') }}</option>
+            }
+          </select>
+        </div>
+        @if (statusUpdateError()) { <div class="alert alert-error">{{ statusUpdateError() }}</div> }
+        @if (statusUpdateSuccess()) { <div class="alert alert-success">{{ statusUpdateSuccess() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="closeModal()">Dismiss</button>
+        <button class="btn-confirm" (click)="updateFlightStatus()" [disabled]="statusUpdating()">
+          @if (statusUpdating()) { <span class="btn-spinner"></span> Processing... }
+          @else { Update Flight }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Add Flight Modal -->
+@if (showAddFlightModal()) {
+  <div class="modal-overlay" (click)="showAddFlightModal.set(false)">
+    <div class="modal-card wide animate-fade-up" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <h3>Schedule New Flight</h3>
+        <button class="close-btn" (click)="showAddFlightModal.set(false)"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-grid">
+          <div class="form-item">
+            <label>Flight Number</label>
+            <input type="text" [ngModel]="flightForm.flightNumber" (ngModelChange)="flightForm.flightNumber = ($event || '').toUpperCase()" placeholder="e.g. SKY-500" class="modal-input upper-input" />
+          </div>
+          <div class="form-item">
+            <label>Airline</label>
+            <select [(ngModel)]="flightForm.airlineId" class="modal-input">
+              <option value="">— Select Airline —</option>
+              @for (airline of airlines(); track airline.airlineId) {
+                <option [value]="airline.airlineId">{{ airline.name }}</option>
+              }
+            </select>
+          </div>
+          <div class="form-item">
+            <label>Origin</label>
+            <select [(ngModel)]="flightForm.originAirportCode" class="modal-input">
+              <option value="">— Origin —</option>
+              @for (airport of airports(); track airport.airportId) {
+                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-item">
+            <label>Destination</label>
+            <select [(ngModel)]="flightForm.destinationAirportCode" class="modal-input">
+              <option value="">— Destination —</option>
+              @for (airport of airports(); track airport.airportId) {
+                <option [value]="airport.iataCode">{{ airport.city }} ({{ airport.iataCode }})</option>
+              }
+            </select>
+          </div>
+          <div class="form-item">
+            <label>Departure Time</label>
+            <input type="datetime-local" [(ngModel)]="flightForm.departureTime" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Arrival Time</label>
+            <input type="datetime-local" [(ngModel)]="flightForm.arrivalTime" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Base Price (₹)</label>
+            <input type="number" [(ngModel)]="flightForm.basePrice" class="modal-input" />
+          </div>
+          <div class="form-item">
+            <label>Total Capacity</label>
+            <input type="number" [(ngModel)]="flightForm.totalSeats" class="modal-input" />
+          </div>
+        </div>
+        @if (addFlightError()) { <div class="alert alert-error">{{ addFlightError() }}</div> }
+      </div>
+      <div class="modal-foot">
+        <button class="btn-cancel" (click)="showAddFlightModal.set(false)">Cancel</button>
+        <button class="btn-confirm" (click)="addFlight()" [disabled]="addFlightLoading()">
+          @if (addFlightLoading()) { <span class="btn-spinner"></span> Scheduling... }
+          @else { Create Flight }
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<app-footer></app-footer>

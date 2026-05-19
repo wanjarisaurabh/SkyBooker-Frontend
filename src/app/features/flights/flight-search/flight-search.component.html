@@ -1,0 +1,181 @@
+<app-navbar></app-navbar>
+
+<main class="search-page">
+  <div class="container">
+
+    <!-- Floating Search Header -->
+    <div class="search-header-hub animate-in">
+      <div class="route-display">
+        <div class="location-group">
+          <span class="loc-code">{{ origin }}</span>
+          <span class="material-symbols-rounded">trending_flat</span>
+          <span class="loc-code">{{ destination }}</span>
+        </div>
+        <div class="divider-v"></div>
+        <div class="meta-group">
+          <div class="meta-item">
+            <span class="material-symbols-rounded">calendar_today</span>
+            <span>{{ date }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="material-symbols-rounded">group</span>
+            <span>{{ passengers }} {{ passengers > 1 ? 'Travellers' : 'Traveller' }}</span>
+          </div>
+        </div>
+      </div>
+      <a routerLink="/home" class="btn-modify">
+        <span class="material-symbols-rounded">tune</span>
+        Modify Search
+      </a>
+    </div>
+
+    <div class="results-container">
+
+      <!-- Sidebar Filters -->
+      <aside class="search-sidebar animate-fade-up">
+        <div class="filter-group">
+          <h3>Sort By</h3>
+          <div class="modern-opts">
+            <label class="m-opt" [class.active]="sortBy() === 'price'">
+              <input type="radio" name="sort" [checked]="sortBy() === 'price'" (change)="sortBy.set('price')" />
+              <span class="material-symbols-rounded">payments</span>
+              <span>Lowest Fare</span>
+            </label>
+            <label class="m-opt" [class.active]="sortBy() === 'departure'">
+              <input type="radio" name="sort" [checked]="sortBy() === 'departure'" (change)="sortBy.set('departure')" />
+              <span class="material-symbols-rounded">schedule</span>
+              <span>Early Departure</span>
+            </label>
+            <label class="m-opt" [class.active]="sortBy() === 'duration'">
+              <input type="radio" name="sort" [checked]="sortBy() === 'duration'" (change)="sortBy.set('duration')" />
+              <span class="material-symbols-rounded">timer</span>
+              <span>Shortest Trip</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3>Availability</h3>
+          <div class="modern-opts">
+            <label class="m-opt" [class.active]="filterStatus() === ''">
+              <input type="radio" name="status" [checked]="filterStatus() === ''" (change)="setFilterStatus('')" />
+              <span class="material-symbols-rounded">grid_view</span>
+              <span>All Flights</span>
+            </label>
+            <label class="m-opt" [class.active]="filterStatus() === 'ON_TIME'">
+              <input type="radio" name="status" [checked]="filterStatus() === 'ON_TIME'"
+                (change)="setFilterStatus('ON_TIME')" />
+              <span class="material-symbols-rounded">verified</span>
+              <span>On Time</span>
+            </label>
+            <label class="m-opt" [class.active]="filterStatus() === 'DELAYED'">
+              <input type="radio" name="status" [checked]="filterStatus() === 'DELAYED'"
+                (change)="setFilterStatus('DELAYED')" />
+              <span class="material-symbols-rounded">report</span>
+              <span>Delayed</span>
+            </label>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Results List -->
+      <section class="results-hub">
+
+        @if (loading()) {
+        <div class="hub-loader">
+          <div class="scanner-line"></div>
+          <p>Scanning best fares for your trip...</p>
+        </div>
+        }
+
+        @if (!loading() && filteredFlights().length === 0) {
+        <div class="hub-empty-state animate-fade-up">
+          <div class="empty-visual">
+            <span class="material-symbols-rounded">flight_takeoff</span>
+          </div>
+          <h2>No flights found</h2>
+          <p>We couldn't find any flights matching your criteria. Try adjusting your dates or route.</p>
+          <button class="btn-primary-hub" routerLink="/home">Try New Search</button>
+        </div>
+        }
+
+        @for (flight of paginatedFlights(); track flight.flightId) {
+        <article class="hub-flight-ticket animate-fade-up">
+          <div class="ticket-left">
+            <div class="airline-row">
+              <div class="airline-icon">
+                <span class="material-symbols-rounded">airlines</span>
+              </div>
+              <div class="airline-meta">
+                <strong>{{ getAirline(flight.airlineId)?.name || 'Skybooker Partner' }}</strong>
+                <span>Flight {{ flight.flightNumber }}</span>
+              </div>
+            </div>
+
+            <div class="flight-itinerary">
+              <div class="it-node">
+                <span class="it-time">{{ formatTime(flight.departureTime) }}</span>
+                <span class="it-code">{{ flight.originAirportCode }}</span>
+              </div>
+              <div class="it-path">
+                <span class="duration">{{ formatDuration(flight.durationMinutes) }}</span>
+                <div class="path-visual">
+                  <div class="p-dot"></div>
+                  <div class="p-line"></div>
+                  <span class="material-symbols-rounded">flight</span>
+                  <div class="p-line"></div>
+                  <div class="p-dot"></div>
+                </div>
+                <span class="stop-tag">Non-stop</span>
+              </div>
+              <div class="it-node text-right">
+                <span class="it-time">{{ formatTime(flight.arrivalTime) }}</span>
+                <span class="it-code">{{ flight.destinationAirportCode }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ticket-divider">
+            <div class="t-cut t-top"></div>
+            <div class="t-line"></div>
+            <div class="t-cut t-bottom"></div>
+          </div>
+
+          <div class="ticket-right">
+            <div class="price-box">
+              <label>Fare starts at</label>
+              <span class="price-tag">₹{{ flight.basePrice.toLocaleString('en-IN') }}</span>
+            </div>
+            <button class="btn-select-hub" (click)="selectFlight(flight)"
+              [disabled]="flight.availableSeats < passengers || ['CANCELLED', 'DEPARTED', 'ARRIVED'].includes(flight.status)">
+              @if (flight.availableSeats === 0) { Sold Out }
+              @else if (flight.availableSeats < passengers) { Not Enough Seats } @else if (flight.status==='CANCELLED' )
+                { Cancelled } @else if (flight.status==='DEPARTED' ) { Departed } @else if (flight.status==='ARRIVED' )
+                { Arrived } @else { Select Flight } </button>
+                <span class="seats-left">{{ seatsLeftLabel(flight) }}</span>
+          </div>
+        </article>
+        }
+
+        <!-- Pagination -->
+        @if (pagesArray().length > 1) {
+        <div class="pagination animate-fade-up">
+          <button class="page-btn" [disabled]="currentPage() === 1" (click)="setPage(currentPage() - 1)">
+            <span class="material-symbols-rounded">chevron_left</span>
+          </button>
+          @for (p of pagesArray(); track p) {
+          <button class="page-btn" [class.active]="p === currentPage()" (click)="setPage(p)">{{ p }}</button>
+          }
+          <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="setPage(currentPage() + 1)">
+            <span class="material-symbols-rounded">chevron_right</span>
+          </button>
+        </div>
+        }
+
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<app-footer></app-footer>

@@ -1,0 +1,133 @@
+<nav class="navbar" [class.scrolled]="true">
+  <div class="nav-container">
+
+    <!-- Logo -->
+    <a routerLink="/" class="nav-logo" (click)="closeMobile()">
+      <svg fill="currentColor" viewBox="-2.5 0 19 19" xmlns="http://www.w3.org/2000/svg" class="logo-icon">
+        <path d="M12.382 5.304 10.096 7.59l.006.02L11.838 14a.908.908 0 0 1-.211.794l-.573.573a.339.339 0 0 1-.566-.08l-2.348-4.25-.745-.746-1.97 1.97a3.311 3.311 0 0 1-.75.504l.44 1.447a.875.875 0 0 1-.199.79l-.175.176a.477.477 0 0 1-.672 0l-1.04-1.039-.018-.02-.788-.786-.02-.02-1.038-1.039a.477.477 0 0 1 0-.672l.176-.176a.875.875 0 0 1 .79-.197l1.447.438a3.322 3.322 0 0 1 .504-.75l1.97-1.97-.746-.744-4.25-2.348a.339.339 0 0 1-.08-.566l.573-.573a.909.909 0 0 1 .794-.211l6.39 1.736.02.006 2.286-2.286c.37-.372 1.621-1.02 1.993-.65.37.372-.279 1.622-.65 1.993z"/>
+      </svg>
+      <span>Skybooker</span>
+    </a>
+
+    <!-- Desktop Nav Links -->
+    <div class="nav-links">
+      @if (!isLoggedIn()) {
+        <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" class="nav-link">Home</a>
+        <a routerLink="/flights/search" class="nav-link">Flights</a>
+      }
+
+      @if (isLoggedIn() && role() === 'PASSENGER') {
+        <a routerLink="/passenger/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+        <a routerLink="/home" class="nav-link">Search Flights</a>
+        <a routerLink="/passenger/my-bookings" routerLinkActive="active" class="nav-link">My Bookings</a>
+      }
+
+      @if (isLoggedIn() && role() === 'AIRLINE_STAFF') {
+        <a routerLink="/staff/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+      }
+
+      @if (isLoggedIn() && role() === 'ADMIN') {
+        <a routerLink="/admin/dashboard" routerLinkActive="active" class="nav-link">Dashboard</a>
+      }
+    </div>
+
+    <!-- Right Actions -->
+    <div class="nav-actions">
+      @if (!isLoggedIn()) {
+        <a routerLink="/auth/login" class="nav-link">Sign in</a>
+        <a routerLink="/auth/register" class="btn-cta">Join Skybooker</a>
+      } @else {
+        <!-- Notifications Bell -->
+        <a [routerLink]="role() === 'ADMIN' ? '/admin/notifications' : role() === 'AIRLINE_STAFF' ? '/staff/notifications' : '/passenger/notifications'" class="notif-btn" title="Notifications">
+          <span class="material-symbols-rounded">notifications</span>
+          @if (unreadCount() > 0) {
+            <span class="notif-badge">{{ unreadCount() > 9 ? '9+' : unreadCount() }}</span>
+          }
+        </a>
+
+        <!-- User Menu -->
+        <a [routerLink]="getDashboardRoute()" class="user-chip">
+          <span class="user-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</span>
+          <span class="user-name">{{ (user()?.fullName?.split(' ') ?? [])[0] }}</span>
+          <span class="material-symbols-rounded arrow-icon">expand_more</span>
+        </a>
+
+        <button class="btn-logout" (click)="logout()" title="Sign out">
+          <span class="material-symbols-rounded">logout</span>
+        </button>
+      }
+
+      <!-- Mobile Hamburger -->
+      <button class="hamburger" (click)="toggleMobile()" [attr.aria-expanded]="mobileMenuOpen()" aria-label="Toggle menu">
+        <span class="material-symbols-rounded">{{ mobileMenuOpen() ? 'close' : 'menu' }}</span>
+      </button>
+    </div>
+
+  </div>
+
+  <!-- Mobile Drawer -->
+  @if (mobileMenuOpen()) {
+    <div class="mobile-menu animate-slide-down">
+      @if (!isLoggedIn()) {
+        <a routerLink="/" class="mob-link" (click)="closeMobile()">
+          <span class="material-symbols-rounded">home</span> Home
+        </a>
+        <a routerLink="/flights/search" class="mob-link" (click)="closeMobile()">
+          <span class="material-symbols-rounded">flight</span> Search Flights
+        </a>
+        <div class="mob-divider"></div>
+        <a routerLink="/auth/login" class="mob-link" (click)="closeMobile()">
+          <span class="material-symbols-rounded">login</span> Sign In
+        </a>
+        <a routerLink="/auth/register" class="mob-cta" (click)="closeMobile()">Join Skybooker</a>
+      } @else {
+        @if (role() === 'PASSENGER') {
+          <a routerLink="/passenger/dashboard" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">dashboard</span> Dashboard
+          </a>
+          <a routerLink="/home" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">flight</span> Search Flights
+          </a>
+          <a routerLink="/passenger/my-bookings" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">confirmation_number</span> My Bookings
+          </a>
+          <a routerLink="/passenger/notifications" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">notifications</span> Notifications
+            @if (unreadCount() > 0) {
+              <span class="mob-badge">{{ unreadCount() }}</span>
+            }
+          </a>
+          <a routerLink="/passenger/profile" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">person</span> Profile
+          </a>
+        }
+        @if (role() === 'AIRLINE_STAFF') {
+          <a routerLink="/staff/dashboard" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">dashboard</span> Dashboard
+          </a>
+          <a routerLink="/staff/notifications" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">notifications</span> Notifications
+            @if (unreadCount() > 0) {
+              <span class="mob-badge">{{ unreadCount() }}</span>
+            }
+          </a>
+        }
+        @if (role() === 'ADMIN') {
+          <a routerLink="/admin/dashboard" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">dashboard</span> Dashboard
+          </a>
+          <a routerLink="/admin/notifications" class="mob-link" (click)="closeMobile()">
+            <span class="material-symbols-rounded">notifications</span> Notifications
+            @if (unreadCount() > 0) {
+              <span class="mob-badge">{{ unreadCount() }}</span>
+            }
+          </a>
+        }
+        <div class="mob-divider"></div>
+        <button class="mob-logout" (click)="logout()">
+          <span class="material-symbols-rounded">logout</span> Sign Out
+        </button>
+      }
+    </div>
+  }
+</nav>

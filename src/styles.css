@@ -1,0 +1,277 @@
+/* ============================================================
+   Skybooker Global Design System
+   Modern, Premium, and Dynamic Sky Travel Experience
+   ============================================================ */
+
+/* ---------- CSS Custom Properties ---------- */
+ :root {
+  /* Corporate Blue Palette */
+  --clr-primary-50:  #eff6ff;
+  --clr-primary-100: #dbeafe;
+  --clr-primary-200: #bfdbfe;
+  --clr-primary-300: #93c5fd;
+  --clr-primary-400: #60a5fa;
+  --clr-primary-500: #3b82f6;
+  --clr-primary-600: #2563eb;
+  --clr-primary-700: #1d4ed8;
+  --clr-primary-800: #1e40af;
+  --clr-primary-900: #1e3a8a;
+
+  /* Accent Teal */
+  --clr-accent-300: #99f6e4;
+  --clr-accent-400: #5eead4;
+  --clr-accent-500: #14b8a6;
+  --clr-accent-600: #0d9488;
+
+  /* Secondary Amber */
+  --clr-secondary-400: #fbbf24;
+  --clr-secondary-500: #f59e0b;
+  --clr-secondary-600: #d97706;
+
+  /* Neutral Modern Greys */
+  --clr-neutral-50:  #f8fafc;
+  --clr-neutral-100: #f1f5f9;
+  --clr-neutral-200: #e2e8f0;
+  --clr-neutral-300: #cbd5e1;
+  --clr-neutral-400: #94a3b8;
+  --clr-neutral-500: #64748b;
+  --clr-neutral-600: #475569;
+  --clr-neutral-700: #334155;
+  --clr-neutral-800: #1e293b;
+  --clr-neutral-900: #0f172a;
+
+  /* Semantic Colors */
+  --clr-success:     #10b981;
+  --clr-success-bg:  rgba(16, 185, 129, 0.1);
+  --clr-error:       #f43f5e;
+  --clr-error-bg:    rgba(244, 63, 94, 0.1);
+  --clr-warning:     #f59e0b;
+  --clr-info:        #3b82f6;
+
+  /* Compatibility Aliases for Blue & White Theme */
+  --primary: var(--clr-primary-600);
+  --primary-dark: var(--clr-primary-700);
+  --primary-light: var(--clr-primary-400);
+  --secondary: var(--clr-neutral-900);
+  --accent: var(--clr-accent-500);
+  --background: var(--clr-primary-50);
+  --surface: #ffffff;
+  --surface-2: var(--clr-neutral-100);
+  --surface-3: var(--clr-neutral-200);
+  --on-surface: var(--clr-neutral-900);
+  --on-surface-variant: var(--clr-neutral-600);
+  --on-surface-muted: var(--clr-neutral-400);
+  --outline: var(--clr-neutral-200);
+
+  /* Glassmorphism Effects */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: rgba(148, 163, 184, 0.2);
+  --glass-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+
+  /* Modern Gradients */
+  --grad-primary: linear-gradient(135deg, #1d4ed8 0%, #2563eb 48%, #3b82f6 100%);
+  --grad-surface: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  --grad-hero: radial-gradient(circle at top right, rgba(37, 99, 235, 0.05), transparent 42%),
+               radial-gradient(circle at bottom left, rgba(59, 130, 246, 0.05), transparent 40%),
+               linear-gradient(160deg, #f0f7ff 0%, #f8faff 52%, #ffffff 100%);
+  --grad-dark: linear-gradient(160deg, #0b1220 0%, #1e3a8a 100%);
+
+  /* Typography */
+  --font-base: 'Outfit', 'Inter', -apple-system, sans-serif;
+  --font-size-xs:   0.75rem;
+  --font-size-sm:   0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg:   1.125rem;
+  --font-size-xl:   1.25rem;
+  --font-size-2xl:  1.5rem;
+  --font-size-3xl:  2rem;
+  --font-size-4xl:  3rem;
+
+  /* Spacing & Radius - Compacted for single-screen view */
+  --space-4: 0.75rem;
+  --space-8: 1.5rem;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-base: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ---------- Reset & Base ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #f0f7ff;
+}
+
+body {
+  font-family: var(--font-base);
+  background: var(--grad-hero);
+  color: var(--clr-neutral-900);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--clr-primary-700);
+}
+
+main {
+  padding-bottom: 16px;
+}
+
+/* ---------- Layout Layout ---------- */
+.page-layout {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 12px;
+}
+
+/* ---------- Components ---------- */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--glass-shadow);
+  transition: transform var(--transition-base), box-shadow var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.12);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  transition: all var(--transition-base);
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.btn-primary {
+  background: var(--grad-primary);
+  color: white;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.22);
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 26px rgba(37, 99, 235, 0.32);
+}
+
+.btn-outline {
+  background: transparent;
+  border: 2px solid var(--clr-primary-600);
+  color: var(--clr-primary-600);
+}
+
+.btn-outline:hover {
+  background: var(--clr-primary-50);
+}
+
+/* ---------- Typography Utilities ---------- */
+.text-gradient {
+  background: var(--grad-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+h1, h2, h3 {
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- Animations ---------- */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-in {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* ---------- Forms ---------- */
+.form-control {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--clr-neutral-200);
+  background: white;
+  transition: border-color var(--transition-base);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--clr-primary-500);
+  box-shadow: 0 0 0 4px var(--clr-primary-100);
+}
+
+/* ---------- Cross-page polish (low specificity) ---------- */
+.search-card,
+.auth-card,
+.flight-card,
+.dash-section,
+.stat-card,
+.summary-card,
+.pay-card,
+.detail-panel,
+.table-wrap.card-table,
+.broadcast-card,
+.airline-selector-card,
+.search-header,
+.filter-sidebar,
+.booking-row {
+  border-color: #dbe5f2;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="tel"],
+input[type="date"],
+select,
+textarea {
+  background-color: #ffffff;
+  border: 1.5px solid var(--outline);
+  color: var(--on-surface);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  :root {
+    --font-size-4xl: 2.25rem;
+  }
+}
