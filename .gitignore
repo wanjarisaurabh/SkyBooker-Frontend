@@ -10,8 +10,8 @@ dist/
 # Logs
 *.log
 
-# Environment files
-src/environments/environment*.ts
+# # Environment files
+# src/environments/environment*.ts
 
 # IDE files
 .vscode/

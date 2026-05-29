@@ -3,11 +3,14 @@
 <main class="dashboard">
   <div class="container animate-in">
 
+
+
+
     <!-- Admin Welcome Banner -->
     <div class="welcome-banner">
       <div class="welcome-glow"></div>
       <div class="welcome-content">
-        <div class="welcome-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</div>
+        <div class="welcome-avatar">{{ user()?.fullName?.charAt(0) | uppercase }}</div> 
         <div>
           <p class="welcome-greeting">System Administrator,</p>
           <h1 class="welcome-name">{{ user()?.fullName }}</h1>
@@ -22,6 +25,7 @@
 
     <!-- Admin Tabs -->
     <div class="admin-tabs">
+      <!-- internal tab id , material icon , display text  -->
       @for (tab of [['overview','dashboard','Overview'],['airlines','airlines','Airlines'],['airports','flight_takeoff','Airports'],['users','people','Users'],['bookings','confirmation_number','Bookings'],['broadcast','campaign','Broadcast']] ; track tab[0]) {
         <button
           class="admin-tab"
