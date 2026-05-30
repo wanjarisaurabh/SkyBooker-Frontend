@@ -1,4 +1,4 @@
-# SkyBooker Frontend
+<img width="738" height="1600" alt="WhatsApp Image 2026-05-30 at 7 57 28 AM" src="https://github.com/user-attachments/assets/f0a52733-0cce-4f94-98bb-385aa0fa2703" /># SkyBooker Frontend
 
 SkyBooker Frontend is an Angular web application for searching flights, booking airline tickets, selecting seats, making payments, and managing user dashboards for passengers, airline staff, and admins.
 
@@ -187,6 +187,7 @@ Runs unit tests with coverage.
 ### Public Pages
 
 Home page:
+
 <img width="1842" height="1066" alt="Screenshot 2026-05-29 112008" src="https://github.com/user-attachments/assets/13b38fc7-e2e9-46c7-a1ed-9decf369a1f1" />
 
 
@@ -207,6 +208,7 @@ Passenger users can search flights, select a flight, choose a seat, complete pay
 
 
 Selected flight:
+
 <img width="1865" height="1063" alt="Screenshot 2026-05-29 112430" src="https://github.com/user-attachments/assets/b584b24d-1ca7-4250-8a03-953c773fee98" />
 
 
@@ -251,6 +253,10 @@ Admin overview:
 Admin broadcast:
 
 <img width="1846" height="1058" alt="Screenshot 2026-05-29 112713" src="https://github.com/user-attachments/assets/39bfe731-4cd8-4c79-945d-5f45468e71f5" />
+
+Email:
+
+<img width="738" height="1600" alt="WhatsApp Image 2026-05-30 at 7 57 28 AM" src="https://github.com/user-attachments/assets/7af93745-a870-4e27-a9e3-79dcb7258ba2" />
 
 ## Backend Integration
 
